@@ -61,6 +61,7 @@
     "classnames": "^2.3.2",
     "fabric": "^5.3.0",
     "highlight.js": "^11.7.0",
+    "jotai": "^2.1.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "omit.js": "^2.0.2",
