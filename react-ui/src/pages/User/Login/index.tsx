@@ -2,12 +2,12 @@ import Footer from '@/components/Footer';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
-import { FormattedMessage, history, useIntl, Helmet } from '@umijs/max';
+import { FormattedMessage, history, useIntl, Helmet, useModel } from '@umijs/max';
 import { Alert, message } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { setSessionToken } from '@/access';
-import { loginUsingPOST } from '@/services/swagger/sysLoginController';
+import { getInfoUsingGET, loginUsingPOST } from '@/services/swagger/sysLoginController';
 import { useAtom } from 'jotai';
 import { loginTokenAtom } from '@/states';
 
@@ -26,10 +26,13 @@ const LoginMessage: React.FC<{
   );
 };
 
+// eslint-disable-next-line no-promise-executor-return
+const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay));
+
 const Login: React.FC = () => {
   const [_, setLoginToken] = useAtom(loginTokenAtom);
   const [userLoginState, setUserLoginState] = useState<API.RLoginVo>({ code: 200 });
-  // const { initialState, setInitialState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel('@@initialState');
 
   const containerClassName = useEmotionCss(() => {
     return {
@@ -65,8 +68,12 @@ const Login: React.FC = () => {
         const expireTime = current.setTime(current.getTime() + 1000 * 12 * 60 * 60);
         setSessionToken(response.data?.token, response.data?.token, expireTime);
         setLoginToken(response.data?.token);
+        // get the fucking user info here
+        const { data: res } = await getInfoUsingGET();
+        await setInitialState({ currentUser: res });
+        await sleep(1600);
+
         message.success(defaultLoginSuccessMessage);
-        console.log('login ok');
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
         return;
