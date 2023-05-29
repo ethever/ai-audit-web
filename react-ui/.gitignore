@@ -42,4 +42,7 @@ build
 
 pnpm-lock.yaml
 
+.hostingConfig.json
+
+
 src/services/swagger/*

@@ -7,6 +7,7 @@
     "dev": "npm run start:dev",
     "build": "max build",
     "deploy": "npm run build && npm run gh-pages",
+    "deploy:4everland": "4ever-hosting deploy",
     "preview": "npm run build && max preview --port 8000",
     "serve": "umi-serve",
     "start": "cross-env UMI_ENV=dev max dev",
