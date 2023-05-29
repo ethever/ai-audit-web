@@ -8,37 +8,37 @@ import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import { clearSessionToken, getAccessToken, getRefreshToken, getTokenExpireTime } from './access';
-import { getRemoteMenu, getRoutersInfo, getUserInfo, patchRouteWithRemoteMenus, setRemoteMenu } from './services/session';
+import {
+  getRemoteMenu,
+  getRoutersInfo,
+  patchRouteWithRemoteMenus,
+  setRemoteMenu,
+} from './services/session';
 import { PageEnum } from './enums/pagesEnums';
-
+import { getInfoUsingGET } from './services/swagger/sysLoginController';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
+  currentUser?: API.UserInfoVo;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchUserInfo?: () => Promise<API.UserInfoVo | undefined>;
 }> {
   const fetchUserInfo = async () => {
+    console.error({ m: 'useing' });
     try {
-      const response = await getUserInfo({
-        skipErrorHandler: true,
-      });
-      if (response.user.avatar === '') {
-        response.user.avatar =
+      const { data } = await getInfoUsingGET({ skipErrorHandler: true });
+
+      if (!(data?.user as any)?.avatar) {
+        ((data?.user ?? {}) as any).avatar =
           'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png';
       }
-      return {
-        ...response.user,
-        permissions: response.permissions,
-        roles: response.roles,
-      } as API.CurrentUser;
+
+      return data;
     } catch (error) {
       console.log(error);
       history.push(PageEnum.LOGIN);
@@ -72,10 +72,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       locale: false,
       // 每当 initialState?.currentUser?.userid 发生修改时重新执行 request
       params: {
-        userId: initialState?.currentUser?.userId,
+        userId: initialState?.currentUser?.user?.userId,
       },
       request: async () => {
-        if (!initialState?.currentUser?.userId) {
+        if (!initialState?.currentUser?.user?.userId) {
           return [];
         }
         // console.log('get menus')
@@ -118,11 +118,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     ],
     links: isDev
       ? [
-        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-          <LinkOutlined />
-          <span>OpenAPI 文档</span>
-        </Link>,
-      ]
+          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+            <LinkOutlined />
+            <span>OpenAPI 文档</span>
+          </Link>,
+        ]
       : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
@@ -153,17 +153,16 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
 export async function onRouteChange({ clientRoutes, location }) {
   const menus = getRemoteMenu();
- // console.log('onRouteChange', clientRoutes, location, menus);
-  if(menus === null && location.pathname !== PageEnum.LOGIN) {
-    console.log('refresh')
-    history.go(0);
-  }
+  console.log('onRouteChange', clientRoutes, location, menus);
+  // if (menus === null && location.pathname !== PageEnum.LOGIN) {
+  //   console.log('refresh');
+  //   history.go(0);
+  // }
 }
 
 // export function patchRoutes({ routes, routeComponents }) {
 //   console.log('patchRoutes', routes, routeComponents);
 // }
-
 
 export async function patchClientRoutes({ routes }) {
   // console.log('patchClientRoutes', routes);
@@ -173,13 +172,13 @@ export async function patchClientRoutes({ routes }) {
 export function render(oldRender: () => void) {
   // console.log('render get routers', oldRender)
   const token = getAccessToken();
-  if(!token || token?.length === 0) {
+  if (!token || token?.length === 0) {
     oldRender();
     return;
   }
-  getRoutersInfo().then(res => {
+  getRoutersInfo().then((res) => {
     setRemoteMenu(res);
-    oldRender()
+    oldRender();
   });
 }
 

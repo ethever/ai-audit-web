@@ -2,11 +2,9 @@ import React from 'react';
 import { Form, message, Row } from 'antd';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { ProForm, ProFormRadio, ProFormText } from '@ant-design/pro-components';
-import { updateUserProfile } from '@/services/system/user';
-
 
 export type BaseInfoProps = {
-  values: Partial<API.CurrentUser> | undefined;
+  values: Partial<API.SysUser> | undefined;
 };
 
 const BaseInfo: React.FC<BaseInfoProps> = (props) => {
@@ -14,13 +12,14 @@ const BaseInfo: React.FC<BaseInfoProps> = (props) => {
   const intl = useIntl();
 
   const handleFinish = async (values: Record<string, any>) => {
-    const data = { ...props.values, ...values } as API.CurrentUser;
-    const resp = await updateUserProfile(data);
-    if (resp.code === 200) {
-      message.success('修改成功');
-    } else {
-      message.warning(resp.msg);
-    }
+    message.error('接口未实现');
+    // const data = { ...props.values, ...values } as API.SysUser;
+    // const resp = await updateUserProfile(data);
+    // if (resp.code === 200) {
+    //   message.success('修改成功');
+    // } else {
+    //   message.warning(resp.msg);
+    // }
   };
 
   return (

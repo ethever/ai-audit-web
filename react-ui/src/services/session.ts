@@ -2,7 +2,7 @@ import { createIcon } from '@/utils/IconUtil';
 import { MenuDataItem } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
 import React, { lazy } from 'react';
-
+import { getRoutersUsingGET } from './swagger/sysLoginController';
 
 let remoteMenu: any = null;
 
@@ -13,7 +13,6 @@ export function getRemoteMenu() {
 export function setRemoteMenu(data: any) {
   remoteMenu = data;
 }
-
 
 function patchRouteItems(route: any, menu: any, parentPath: string) {
   for (const menuItem of menu) {
@@ -28,19 +27,19 @@ function patchRouteItems(route: any, menu: any, parentPath: string) {
           }
         }
         if (!hasItem) {
-          newItem = {         
+          newItem = {
             path: menuItem.path,
             routes: [],
-            children: []
-          }
-          route.routes.push(newItem)
+            children: [],
+          };
+          route.routes.push(newItem);
         }
         patchRouteItems(newItem, menuItem.routes, parentPath + menuItem.path + '/');
       }
     } else {
       const names: string[] = menuItem.component.split('/');
       let path = '';
-      names.forEach(name => {
+      names.forEach((name) => {
         if (path.length > 0) {
           path += '/';
         }
@@ -49,9 +48,9 @@ function patchRouteItems(route: any, menu: any, parentPath: string) {
         } else {
           path += name;
         }
-      })
+      });
       if (!path.endsWith('.tsx')) {
-        path += '.tsx'
+        path += '.tsx';
       }
       if (route.routes === undefined) {
         route.routes = [];
@@ -62,7 +61,7 @@ function patchRouteItems(route: any, menu: any, parentPath: string) {
       const newRoute = {
         element: React.createElement(lazy(() => import('@/pages/' + path))),
         path: parentPath + menuItem.path,
-      }
+      };
       route.children.push(newRoute);
       route.routes.push(newRoute);
     }
@@ -70,7 +69,9 @@ function patchRouteItems(route: any, menu: any, parentPath: string) {
 }
 
 export function patchRouteWithRemoteMenus(routes: any) {
-  if (remoteMenu === null) { return; }
+  if (remoteMenu === null) {
+    return;
+  }
   let proLayout = null;
   for (const routeItem of routes) {
     if (routeItem.id === 'ant-design-pro-layout') {
@@ -92,12 +93,13 @@ export async function getUserInfo(options?: Record<string, any>) {
 // 刷新方法
 export async function refreshToken() {
   return request('/api/auth/refresh', {
-    method: 'post'
-  })
+    method: 'post',
+  });
 }
 
 export async function getRouters(): Promise<any> {
-  return request('/api/system/menu/getRouters');
+  return getRoutersUsingGET();
+  // return request('/api/system/menu/getRouters');
 }
 
 export function convertCompatRouters(childrens: API.RoutersMenuItem[]): any[] {
@@ -117,6 +119,7 @@ export function convertCompatRouters(childrens: API.RoutersMenuItem[]): any[] {
 }
 
 export async function getRoutersInfo(): Promise<MenuDataItem[]> {
+  console.error('getRoutersInfo');
   return getRouters().then((res) => {
     if (res.code === 200) {
       return convertCompatRouters(res.data);

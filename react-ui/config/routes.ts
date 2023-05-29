@@ -13,6 +13,8 @@
 export default [
   {
     path: '/',
+    // layout: false,
+    // component: './User/Center',
     redirect: '/account/center',
   },
   {
@@ -60,7 +62,7 @@ export default [
         path: '/system/role-auth/user/:id',
         component: './System/Role/authUser',
       },
-    ]
+    ],
   },
   {
     name: 'monitor',
@@ -71,7 +73,7 @@ export default [
         path: '/monitor/job-log/index/:id',
         component: './Monitor/JobLog',
       },
-    ]
+    ],
   },
   {
     name: 'tool',
@@ -87,6 +89,6 @@ export default [
         path: '/tool/gen/edit',
         component: './Tool/Gen/edit',
       },
-    ]
+    ],
   },
 ];

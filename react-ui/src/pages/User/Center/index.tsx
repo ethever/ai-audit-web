@@ -13,54 +13,39 @@ import BaseInfo from './components/BaseInfo';
 import ResetPassword from './components/ResetPassword';
 import AvatarCropper from './components/AvatarCropper';
 import { useRequest } from '@umijs/max';
-import { getUserInfo } from '@/services/session';
 import { PageLoading } from '@ant-design/pro-components';
+import { getInfoUsingGET } from '@/services/swagger/sysLoginController';
 
 const operationTabList = [
   {
     key: 'base',
-    tab: (
-      <span>
-        基本资料
-      </span>
-    ),
+    tab: <span>基本资料</span>,
   },
   {
     key: 'password',
-    tab: (
-      <span>
-        重置密码
-      </span>
-    ),
+    tab: <span>重置密码</span>,
   },
 ];
 
 export type tabKeyType = 'base' | 'password';
 
 const Center: React.FC = () => {
-  
   const [tabKey, setTabKey] = useState<tabKeyType>('base');
-  
+
   const [cropperModalOpen, setCropperModalOpen] = useState<boolean>(false);
-  
+
   //  获取用户信息
   const { data: userInfo, loading } = useRequest(async () => {
-    return { data: await getUserInfo()};
+    return { data: await getInfoUsingGET() };
   });
   if (loading) {
     return <div>loading...</div>;
   }
 
-  const currentUser = userInfo?.user;
+  const currentUser = userInfo?.data?.user;
 
   //  渲染用户信息
-  const renderUserInfo = ({
-    userName,
-    phonenumber,
-    email,
-    sex,
-    dept,
-  }: Partial<API.CurrentUser>) => {
+  const renderUserInfo = ({ userName, phonenumber, email, sex }: Partial<API.SysUser>) => {
     return (
       <List>
         <List.Item>
@@ -116,7 +101,6 @@ const Center: React.FC = () => {
             />
             部门
           </div>
-          <div>{dept?.deptName}</div>
         </List.Item>
       </List>
     );
@@ -141,14 +125,15 @@ const Center: React.FC = () => {
     <div>
       <Row gutter={[16, 24]}>
         <Col lg={8} md={24}>
-          <Card
-            title="个人信息"
-            bordered={false}
-            loading={loading}
-          >
+          <Card title="个人信息" bordered={false} loading={loading}>
             {!loading && (
-              <div style={{ textAlign: "center"}}>
-                <div className={styles.avatarHolder} onClick={()=>{setCropperModalOpen(true)}}>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  className={styles.avatarHolder}
+                  onClick={() => {
+                    setCropperModalOpen(true);
+                  }}
+                >
                   <img alt="" src={currentUser.avatar} />
                 </div>
                 {renderUserInfo(currentUser)}
@@ -188,7 +173,7 @@ const Center: React.FC = () => {
       </Row>
       <AvatarCropper
         onFinished={() => {
-          setCropperModalOpen(false);     
+          setCropperModalOpen(false);
         }}
         open={cropperModalOpen}
         data={currentUser.avatar}
